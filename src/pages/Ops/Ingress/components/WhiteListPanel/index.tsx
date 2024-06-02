@@ -8,6 +8,7 @@ import {
   Drawer,
   Flex,
   FloatButton,
+  Input,
   Modal,
   Row,
   Statistic,
@@ -27,6 +28,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
   const [messageApi, msgContextHolder] = message.useMessage();
   const [drawerOpened, setDrawerOpened] = useState<boolean>(false);
   const [confirmModalOpened, setConfirmModalOpened] = useState<boolean>(false);
+  const [addIpAddrsModalOpened, setAddIpAddrsModalOpened] = useState<boolean>(false);
   const [editEnabled, setEditEnabled] = useState<boolean>(false);
   const [ipAddrs, setIpAddrs] = useState<string[]>([]);
   const [addedIpAddrs, setAddedIpAddrs] = useState<string[]>([]);
@@ -136,7 +138,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
             <Tag
               color="blue"
               onClick={() => {
-                alert('plus');
+                setAddIpAddrsModalOpened(true);
               }}
             >
               <PlusOutlined />
@@ -173,6 +175,18 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
           />
         )}
         <Modal
+          title="批量新增"
+          open={addIpAddrsModalOpened}
+          onOk={() => {
+            setAddIpAddrsModalOpened(false);
+          }}
+          onCancel={() => {
+            setAddIpAddrsModalOpened(false);
+          }}
+        >
+          <Input.TextArea autoSize placeholder="请输入 ip / cidr 并以换行分割"></Input.TextArea>
+        </Modal>
+        <Modal
           title="变动预览"
           open={confirmModalOpened}
           okText={'确认提交'}
@@ -192,6 +206,13 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
           })}
           <Divider />
           <p>新增的内容（共 {addedIpAddrs.length} 条）</p>
+          {addedIpAddrs.map((ip: string) => {
+            return (
+              <Tag key={ip} color={'blue'}>
+                {ip}
+              </Tag>
+            );
+          })}
         </Modal>
       </Drawer>
     </div>

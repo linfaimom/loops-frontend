@@ -73,13 +73,13 @@ const columns: ProColumns<API.Ingress>[] = [
       return [
         <IngressYamlViewer
           key={index}
-          envId={1}
+          envId={record.envId}
           namespace={record.namespace}
           name={record.ingressName}
         />,
         <WhiteListPanel
           key={index}
-          envId={1}
+          envId={record.envId}
           namespace={record.namespace}
           name={record.ingressName}
         />,
