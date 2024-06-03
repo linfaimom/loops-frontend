@@ -1,6 +1,7 @@
 import { fetchEnvs } from '@/services/env/api';
 import { fetchIngresses } from '@/services/ingress/api';
 import { fetchNamespaces } from '@/services/namespace/api';
+import { WarningOutlined } from '@ant-design/icons';
 import { PageContainer, ProColumns, ProTable, TableDropdown } from '@ant-design/pro-components';
 import '@umijs/max';
 import { useRequest } from '@umijs/max';
@@ -129,7 +130,12 @@ const IngressList: React.FC = () => {
             onChange={(key) => {
               setEnvId(Number(key));
             }}
-            items={data.map((item) => ({ key: item.id.toString(), label: item.name }))}
+            items={data.map((item) => ({
+              icon: item.name.includes('prod') ? <WarningOutlined /> : null,
+              key: item.id.toString(),
+              label: item.name,
+              children: <p>{item.description}</p>,
+            }))}
           />
           <ProTable columns={columns} params={{ envId: envId }} request={fetchIngresses} />
         </>
