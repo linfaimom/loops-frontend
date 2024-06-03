@@ -2,11 +2,17 @@ import { fetchEnvs } from '@/services/env/api';
 import { fetchIngresses } from '@/services/ingress/api';
 import { fetchNamespaces } from '@/services/namespace/api';
 import { WarningOutlined } from '@ant-design/icons';
-import { PageContainer, ProColumns, ProTable, TableDropdown } from '@ant-design/pro-components';
+import {
+  PageContainer,
+  ProColumns,
+  ProFormInstance,
+  ProTable,
+  TableDropdown,
+} from '@ant-design/pro-components';
 import '@umijs/max';
 import { useRequest } from '@umijs/max';
 import { Popover, Select, Tabs } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import IngressYamlViewer from './components/IngressYamlViewer';
 import WhiteListPanel from './components/WhiteListPanel';
 
@@ -21,6 +27,7 @@ const listNamespaces = async (params: { envId: number }) => {
 const IngressList: React.FC = () => {
   const { data } = useRequest(() => fetchEnvs());
   const [envId, setEnvId] = useState<number>(0);
+  const formRef = useRef<ProFormInstance>();
   const columns: ProColumns<API.Ingress>[] = [
     {
       dataIndex: 'index',
@@ -43,6 +50,8 @@ const IngressList: React.FC = () => {
             //@ts-ignore
             newValues[`${item.dataIndex}`] = value;
             form.setFieldsValue(newValues);
+            // 触发提交以用新 namespace 值来搜寻
+            formRef?.current?.submit();
           },
         };
         //@ts-ignore options 是透过 remote request 取回来了的
@@ -152,7 +161,12 @@ const IngressList: React.FC = () => {
               children: <p>{item.description}</p>,
             }))}
           />
-          <ProTable columns={columns} params={{ envId: envId }} request={fetchIngresses} />
+          <ProTable
+            formRef={formRef}
+            columns={columns}
+            params={{ envId: envId }}
+            request={fetchIngresses}
+          />
         </>
       )}
     </PageContainer>
