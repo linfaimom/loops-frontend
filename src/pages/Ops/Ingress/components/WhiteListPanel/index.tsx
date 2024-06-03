@@ -1,5 +1,5 @@
 import { fetchIngressWhiteList, updateIngressWhiteList } from '@/services/ingress/api';
-import { DeleteOutlined, PlusOutlined, SaveFilled } from '@ant-design/icons';
+import { PlusOutlined, SaveFilled } from '@ant-design/icons';
 import { useRequest } from '@umijs/max';
 import {
   Card,
@@ -27,11 +27,12 @@ type WhiteListPanelProps = {
 const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
   const [messageApi, msgContextHolder] = message.useMessage();
   const [drawerOpened, setDrawerOpened] = useState<boolean>(false);
+  const [editEnabled, setEditEnabled] = useState<boolean>(false);
   const [confirmModalOpened, setConfirmModalOpened] = useState<boolean>(false);
   const [addIpAddrsModalOpened, setAddIpAddrsModalOpened] = useState<boolean>(false);
-  const [editEnabled, setEditEnabled] = useState<boolean>(false);
   const [ipAddrs, setIpAddrs] = useState<string[]>([]);
   const [addedIpAddrs, setAddedIpAddrs] = useState<string[]>([]);
+  const [addedIpAddrsStr, setAddedIpAddrsStr] = useState<string>('');
   const [removedIpAddrs, setRemovedIpAddrs] = useState<string[]>([]);
   const { data, loading, run } = useRequest(() => fetchIngressWhiteList({ ...props }), {
     manual: true,
@@ -55,9 +56,12 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
   const toggleOpenEditMode = (open: boolean) => {
     if (!open && (addedIpAddrs.length > 0 || removedIpAddrs.length > 0)) {
       alert('所有变更将被还原');
-      setIpAddrs(data as string[]);
       setAddedIpAddrs([]);
       setRemovedIpAddrs([]);
+      run();
+      if (data && Array.isArray(data)) {
+        setIpAddrs(data);
+      }
     }
     setEditEnabled(open);
   };
@@ -66,14 +70,24 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
       toggleOpenEditMode(false);
     }
     setDrawerOpened(false);
-    setIpAddrs([]);
     setAddedIpAddrs([]);
     setRemovedIpAddrs([]);
+    setIpAddrs([]);
+  };
+  const handleAddIpAddr = (addedIpAddr: string) => {
+    addedIpAddrs.push(addedIpAddr);
+    setAddedIpAddrs(addedIpAddrs);
+    ipAddrs.unshift(addedIpAddr);
+    setIpAddrs(ipAddrs);
   };
   const handleRemoveIpAddr = (removedIpAddr: string) => {
-    setIpAddrs(ipAddrs.filter((ip) => ip !== removedIpAddr));
-    removedIpAddrs.push(removedIpAddr);
+    if (addedIpAddrs.includes(removedIpAddr)) {
+      setAddedIpAddrs(addedIpAddrs.filter((ip) => ip !== removedIpAddr));
+    } else {
+      removedIpAddrs.push(removedIpAddr);
+    }
     setRemovedIpAddrs(removedIpAddrs);
+    setIpAddrs(ipAddrs.filter((ip) => ip !== removedIpAddr));
   };
   const previewChangesAndConfirm = () => {
     setConfirmModalOpened(true);
@@ -131,7 +145,13 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
           </Col>
         </Row>
         <Divider plain={true}>
-          编辑模式 <Switch onChange={toggleOpenEditMode} checked={editEnabled} />
+          <Switch
+            onChange={toggleOpenEditMode}
+            checked={editEnabled}
+            checkedChildren="编辑模式"
+            unCheckedChildren="只读模式"
+          />
+          {editEnabled && <>（变动仅为实时预览，最终生效需点按钮保存）</>}
         </Divider>
         <Flex gap="4px 0" wrap>
           {editEnabled && (
@@ -145,21 +165,14 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
               批量新增
             </Tag>
           )}
-          {editEnabled && ipAddrs.length > 0 && (
-            <Tag
-              color="red"
-              onClick={() => {
-                setRemovedIpAddrs(ipAddrs);
-                setIpAddrs([]);
-              }}
-            >
-              <DeleteOutlined />
-              全部清空
-            </Tag>
-          )}
           {ipAddrs.map((ip: string) => {
             return (
-              <Tag closable={editEnabled} key={ip} onClose={() => handleRemoveIpAddr(ip)}>
+              <Tag
+                closable={editEnabled}
+                key={ip}
+                onClose={() => handleRemoveIpAddr(ip)}
+                color={addedIpAddrs.includes(ip) ? 'blue' : 'default'}
+              >
                 {ip}
               </Tag>
             );
@@ -170,7 +183,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
             shape="circle"
             type="primary"
             icon={<SaveFilled />}
-            tooltip="预览并保存"
+            tooltip="确认变动并保存"
             onClick={previewChangesAndConfirm}
           />
         )}
@@ -178,18 +191,27 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
           title="批量新增"
           open={addIpAddrsModalOpened}
           onOk={() => {
+            addedIpAddrsStr.split('\n').forEach((item) => {
+              handleAddIpAddr(item);
+            });
+            setAddedIpAddrsStr('');
             setAddIpAddrsModalOpened(false);
           }}
           onCancel={() => {
+            setAddedIpAddrsStr('');
             setAddIpAddrsModalOpened(false);
           }}
         >
-          <Input.TextArea autoSize placeholder="请输入 ip / cidr 并以换行分割"></Input.TextArea>
+          <Input.TextArea
+            autoSize
+            placeholder="请输入 ip / cidr 并回车换行以进行分割"
+            value={addedIpAddrsStr}
+            onChange={(e) => setAddedIpAddrsStr(e.target.value)}
+          />
         </Modal>
         <Modal
-          title="变动预览"
+          title="变动内容最终确认"
           open={confirmModalOpened}
-          okText={'确认提交'}
           onOk={submitChanges}
           confirmLoading={postDataLoading}
           onCancel={() => {
