@@ -1,5 +1,6 @@
 import { fetchEnvs } from '@/services/env/api';
 import { fetchIngresses } from '@/services/ingress/api';
+import { fetchNamespaces } from '@/services/namespace/api';
 import type { ProColumns } from '@ant-design/pro-components';
 import { PageContainer, ProTable, TableDropdown } from '@ant-design/pro-components';
 import '@umijs/max';
@@ -8,6 +9,14 @@ import { Popover, Tabs } from 'antd';
 import React, { useEffect, useState } from 'react';
 import IngressYamlViewer from './components/IngressYamlViewer';
 import WhiteListPanel from './components/WhiteListPanel';
+
+const listNamespaces = async (params: { envId: number }) => {
+  let resp = await fetchNamespaces({ ...params });
+  let data = resp['data'];
+  return data.map((item: string) => {
+    return { label: item, value: item };
+  });
+};
 
 const columns: ProColumns<API.Ingress>[] = [
   {
@@ -18,6 +27,9 @@ const columns: ProColumns<API.Ingress>[] = [
     title: '命名空间',
     dataIndex: 'namespace',
     initialValue: 'low-code',
+    valueType: 'select',
+    params: { envId: 1 },
+    request: listNamespaces,
   },
   {
     title: 'ingress 类',
@@ -85,11 +97,11 @@ const columns: ProColumns<API.Ingress>[] = [
         />,
         <TableDropdown
           key="actionGroup"
-          menus={[{ key: 'editAnnotations', name: '配置Annotations' }]}
-          onSelect={(key) => {
+          menus={[{ key: 'editAnnotations', name: '配置 Annotations' }]}
+          onSelect={(key: string) => {
             switch (key) {
               case 'editAnnotations':
-                console.log('edit annotations');
+                alert('edit annotations');
                 break;
               default:
                 break;
