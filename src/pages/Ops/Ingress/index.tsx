@@ -11,7 +11,7 @@ import WhiteListPanel from './components/WhiteListPanel';
 
 const listNamespaces = async (params: { envId: number }) => {
   let resp = await fetchNamespaces({ ...params });
-  let data = resp['data'];
+  let data = resp.data;
   return data.map((item: string) => {
     return { label: item, value: item };
   });
@@ -115,21 +115,21 @@ const IngressList: React.FC = () => {
     },
   ];
   useEffect(() => {
-    if (data && Array.isArray(data) && data.length > 0) {
+    if (data && data.length > 0) {
       setEnvId(data[0].id);
     }
   }, [data]);
 
   return (
     <PageContainer>
-      {Array.isArray(data) && envId > 0 && (
+      {data && envId > 0 && (
         <>
           <Tabs
             type="card"
             onChange={(key) => {
               setEnvId(Number(key));
             }}
-            items={data.map((item: API.Env) => ({ key: item.id.toString(), label: item.name }))}
+            items={data.map((item) => ({ key: item.id.toString(), label: item.name }))}
           />
           <ProTable columns={columns} params={{ envId: envId }} request={fetchIngresses} />
         </>

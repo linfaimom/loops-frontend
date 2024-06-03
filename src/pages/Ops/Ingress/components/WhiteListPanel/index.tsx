@@ -44,7 +44,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
     },
   );
   useEffect(() => {
-    if (data && Array.isArray(data)) {
+    if (data) {
       setIpAddrs(data);
     }
   }, [data]);
@@ -58,7 +58,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
       setAddedIpAddrs([]);
       setRemovedIpAddrs([]);
       run();
-      if (data && Array.isArray(data)) {
+      if (data) {
         setIpAddrs(data);
       }
     }

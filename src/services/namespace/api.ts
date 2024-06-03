@@ -9,7 +9,7 @@ export async function fetchNamespaces(
   },
   options?: { [key: string]: any },
 ) {
-  return request('/api/v1/namespaces', {
+  return request<API.CommonResponse<string[]>>('/api/v1/namespaces', {
     method: 'GET',
     params: {
       ...params,

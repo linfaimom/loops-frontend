@@ -11,7 +11,7 @@ export async function fetchIngresses(
   },
   options?: { [key: string]: any },
 ) {
-  return request('/api/v1/ingresses', {
+  return request<API.CommonResponse<API.Ingress[]>>('/api/v1/ingresses', {
     method: 'GET',
     params: {
       ...params,
@@ -29,7 +29,7 @@ export async function fetchIngressYaml(
   },
   options?: { [key: string]: any },
 ) {
-  return request('/api/v1/ingresses/one/yaml', {
+  return request<API.CommonResponse<string>>('/api/v1/ingresses/one/yaml', {
     method: 'GET',
     params: {
       ...params,
@@ -48,7 +48,7 @@ export async function fetchIngressWhiteList(
   },
   options?: { [key: string]: any },
 ) {
-  return request('/api/v1/ingresses/one/whitelist', {
+  return request<API.CommonResponse<string[]>>('/api/v1/ingresses/one/whitelist', {
     method: 'GET',
     params: {
       ...params,
@@ -68,7 +68,7 @@ export async function updateIngressWhiteList(
   },
   options?: { [key: string]: any },
 ) {
-  return request('/api/v1/ingresses/one/whitelist', {
+  return request<API.CommonResponse<API.Ingress>>('/api/v1/ingresses/one/whitelist', {
     method: 'POST',
     data: {
       ...params,
