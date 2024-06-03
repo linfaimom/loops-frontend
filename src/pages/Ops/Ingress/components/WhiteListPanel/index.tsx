@@ -37,13 +37,12 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
   const { data, loading, run } = useRequest(() => fetchIngressWhiteList({ ...props }), {
     manual: true,
   });
-  const {
-    loading: postDataLoading,
-    run: runPostData,
-    error,
-  } = useRequest(() => updateIngressWhiteList({ ipList: ipAddrs, override: true, ...props }), {
-    manual: true,
-  });
+  const { loading: postDataLoading, run: runPostData } = useRequest(
+    () => updateIngressWhiteList({ ipList: ipAddrs, override: true, ...props }),
+    {
+      manual: true,
+    },
+  );
   useEffect(() => {
     if (data && Array.isArray(data)) {
       setIpAddrs(data);
@@ -94,17 +93,10 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
   };
   const submitChanges = async () => {
     await runPostData();
-    if (error) {
-      messageApi.open({
-        type: 'error',
-        content: error.message,
-      });
-    } else {
-      messageApi.open({
-        type: 'success',
-        content: '更新成功',
-      });
-    }
+    messageApi.open({
+      type: 'success',
+      content: '更新成功',
+    });
     setConfirmModalOpened(false);
     setEditEnabled(false);
     setAddedIpAddrs([]);
