@@ -5,7 +5,7 @@ import { WarningOutlined } from '@ant-design/icons';
 import { PageContainer, ProColumns, ProTable, TableDropdown } from '@ant-design/pro-components';
 import '@umijs/max';
 import { useRequest } from '@umijs/max';
-import { Popover, Tabs } from 'antd';
+import { Popover, Select, Tabs } from 'antd';
 import React, { useEffect, useState } from 'react';
 import IngressYamlViewer from './components/IngressYamlViewer';
 import WhiteListPanel from './components/WhiteListPanel';
@@ -30,9 +30,24 @@ const IngressList: React.FC = () => {
       title: '命名空间',
       dataIndex: 'namespace',
       initialValue: 'low-code',
-      valueType: 'select',
       params: { envId: envId },
       request: listNamespaces,
+      renderFormItem: (item, config, form) => {
+        console.log(item);
+        console.log(config);
+        console.log(form);
+        const rest = {
+          value: form.getFieldValue(`${item.dataIndex}`),
+          onChange: (value: any) => {
+            const newValues = {};
+            //@ts-ignore
+            newValues[`${item.dataIndex}`] = value;
+            form.setFieldsValue(newValues);
+          },
+        };
+        //@ts-ignore options 是透过 remote request 取回来了的
+        return <Select showSearch options={config.options} {...rest} />;
+      },
     },
     {
       title: 'ingress 类',
