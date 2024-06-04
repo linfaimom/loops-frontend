@@ -19,6 +19,7 @@ import WhiteListPanel from './components/WhiteListPanel';
 const listNamespaces = async (params: { envId: number }) => {
   let resp = await fetchNamespaces({ ...params });
   let data = resp.data;
+  // 返回为一个 options 列表供 select 组件使用
   return data.map((item: string) => {
     return { label: item, value: item };
   });
