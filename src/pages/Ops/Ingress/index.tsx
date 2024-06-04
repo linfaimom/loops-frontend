@@ -40,9 +40,6 @@ const IngressList: React.FC = () => {
       params: { envId: envId },
       request: listNamespaces,
       renderFormItem: (item, config, form) => {
-        console.log(item);
-        console.log(config);
-        console.log(form);
         const rest = {
           value: form.getFieldValue(`${item.dataIndex}`),
           onChange: (value: any) => {
