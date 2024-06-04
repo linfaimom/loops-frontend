@@ -50,12 +50,14 @@ const IngressList: React.FC = () => {
             //@ts-ignore
             newValues[`${item.dataIndex}`] = value;
             form.setFieldsValue(newValues);
-            // 触发提交以用新 namespace 值来搜寻
-            formRef?.current?.submit();
+            if (value !== undefined) {
+              // 触发提交以用新 namespace 值来搜寻
+              formRef?.current?.submit();
+            }
           },
         };
         //@ts-ignore options 是透过 remote request 取回来了的
-        return <Select showSearch options={config.options} {...rest} />;
+        return <Select showSearch allowClear options={config.options} {...rest} />;
       },
     },
     {
