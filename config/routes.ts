@@ -12,7 +12,7 @@ export default [
     access: 'canAdmin',
     routes: [
       { path: '/admin', redirect: '/admin/env' },
-      { path: '/admin/env', name:'环境管理', component: './Admin' },
+      { path: '/admin/env', name: '环境管理', component: './Admin/Env' },
     ],
   },
   {

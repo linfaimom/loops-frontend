@@ -6,5 +6,10 @@ declare namespace API {
     id: number;
     name: string;
     description: string;
+    agentUrl: string;
+    createdAt: string;
+    createdBy: string;
+    updatedAt: string;
+    updatedBy: string;
   };
 }
