@@ -11,12 +11,18 @@ import {
 } from '@ant-design/pro-components';
 import '@umijs/max';
 import { useRequest } from '@umijs/max';
-import { Popover, Select, Tabs } from 'antd';
+import { Input, Popover, Select, Tabs } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import IngressYamlViewer from './components/IngressYamlViewer';
 import WhiteListPanel from './components/WhiteListPanel';
 
-const listNamespaces = async (params: { envId: number }) => {
+const prodIndentifier = 'prod';
+
+const listNamespaces = async (params: { envId: number; envName: string }) => {
+  // 涉及 prod 的，直接跳过请求。因为 namespace 数量会非常庞大，比如外部 saas 就有 2w 个
+  if (params.envName.includes(prodIndentifier)) {
+    return [];
+  }
   let resp = await fetchNamespaces({ ...params });
   let data = resp.data;
   // 返回为一个 options 列表供 select 组件使用
@@ -28,6 +34,7 @@ const listNamespaces = async (params: { envId: number }) => {
 const IngressList: React.FC = () => {
   const { data } = useRequest(() => fetchEnvs());
   const [envId, setEnvId] = useState<number>(0);
+  const [envName, setEnvName] = useState<string>('');
   const formRef = useRef<ProFormInstance>();
   const columns: ProColumns<API.Ingress>[] = [
     {
@@ -37,10 +44,14 @@ const IngressList: React.FC = () => {
     {
       title: '命名空间',
       dataIndex: 'namespace',
+      tooltip: '生产环境下需要自行输入 namespace',
       initialValue: 'low-code',
-      params: { envId: envId },
+      params: { envId: envId, envName: envName },
       request: listNamespaces,
       renderFormItem: (item, config, form) => {
+        if (envName.includes(prodIndentifier)) {
+          return <Input allowClear />;
+        }
         const rest = {
           value: form.getFieldValue(`${item.dataIndex}`),
           onChange: (value: any) => {
@@ -142,6 +153,7 @@ const IngressList: React.FC = () => {
   useEffect(() => {
     if (data && data.length > 0) {
       setEnvId(data[0].id);
+      setEnvName(data[0].name);
     }
   }, [data]);
 
@@ -153,12 +165,15 @@ const IngressList: React.FC = () => {
             type="card"
             onChange={(key) => {
               setEnvId(Number(key));
+              let result = data.find((item) => item.id === Number(key));
+              if (result) {
+                setEnvName(result.name);
+              }
             }}
             items={data.map((item) => ({
               icon: item.name.includes('prod') ? <WarningOutlined /> : null,
               key: item.id.toString(),
-              label: item.name,
-              children: <p>{item.description}</p>,
+              label: item.description,
             }))}
           />
           <ProTable
