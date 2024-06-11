@@ -44,7 +44,6 @@ const IngressList: React.FC = () => {
     {
       title: '命名空间',
       dataIndex: 'namespace',
-      tooltip: '生产环境下需要自行输入 namespace',
       initialValue: 'low-code',
       params: { envId: envId, envName: envName },
       request: listNamespaces,
@@ -119,22 +118,22 @@ const IngressList: React.FC = () => {
       title: '操作',
       search: false,
       valueType: 'option',
-      render: (_, record, index) => {
+      render: (_, record) => {
         return [
           <WhiteListPanel
-            key={index}
+            key={0}
             envId={record.envId}
             namespace={record.namespace}
             name={record.ingressName}
           />,
           <IngressYamlViewer
-            key={index}
+            key={1}
             envId={record.envId}
             namespace={record.namespace}
             name={record.ingressName}
           />,
           <TableDropdown
-            key="actionGroup"
+            key={2}
             menus={[{ key: 'editAnnotations', name: '配置 Annotations' }]}
             onSelect={(key: string) => {
               switch (key) {
