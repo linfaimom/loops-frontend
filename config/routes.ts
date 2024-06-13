@@ -18,6 +18,7 @@ export default [
   {
     name: '日常运维',
     icon: 'table',
+    access: 'canAdmin',
     path: '/ops',
     routes: [
       { path: '/ops', redirect: '/ops/ingress' },

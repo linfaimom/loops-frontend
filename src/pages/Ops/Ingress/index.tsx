@@ -49,7 +49,7 @@ const IngressList: React.FC = () => {
       request: listNamespaces,
       renderFormItem: (item, config, form) => {
         if (envName.includes(prodIndentifier)) {
-          return <Input allowClear />;
+          return <Input placeholder="请手动输入 namespace" allowClear />;
         }
         const rest = {
           value: form.getFieldValue(`${item.dataIndex}`),
