@@ -11,7 +11,7 @@ import {
 } from '@ant-design/pro-components';
 import '@umijs/max';
 import { useRequest } from '@umijs/max';
-import { Input, Popover, Select, Tabs } from 'antd';
+import { Input, Popover, Select, Tabs, message } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import IngressYamlViewer from './components/IngressYamlViewer';
 import WhiteListPanel from './components/WhiteListPanel';
@@ -33,6 +33,7 @@ const listNamespaces = async (params: { envId: number; envName: string }) => {
 
 const IngressList: React.FC = () => {
   const { data } = useRequest(() => fetchEnvs());
+  const [messageApi, msgContextHolder] = message.useMessage();
   const [envId, setEnvId] = useState<number>(0);
   const [envName, setEnvName] = useState<string>('');
   const formRef = useRef<ProFormInstance>();
@@ -158,6 +159,7 @@ const IngressList: React.FC = () => {
 
   return (
     <PageContainer>
+      {msgContextHolder}
       {data && envId > 0 && (
         <>
           <Tabs
@@ -167,6 +169,9 @@ const IngressList: React.FC = () => {
               let result = data.find((item) => item.id === Number(key));
               if (result) {
                 setEnvName(result.name);
+                if (result.name.includes(prodIndentifier)) {
+                  messageApi.warning('当前为生产环境，请谨慎操作！');
+                }
               }
             }}
             items={data.map((item) => ({

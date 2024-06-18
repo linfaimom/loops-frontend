@@ -74,6 +74,10 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
     setIpAddrs([]);
   };
   const handleAddIpAddr = (addedIpAddr: string) => {
+    if (ipAddrs.includes(addedIpAddr)) {
+      console.log(addedIpAddr + ' already existed, skip');
+      return;
+    }
     addedIpAddrs.push(addedIpAddr);
     setAddedIpAddrs(addedIpAddrs);
     ipAddrs.unshift(addedIpAddr);
@@ -93,10 +97,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
   };
   const submitChanges = async () => {
     await runPostData();
-    messageApi.open({
-      type: 'success',
-      content: '更新成功',
-    });
+    messageApi.success('更新成功');
     setConfirmModalOpened(false);
     setEditEnabled(false);
     setAddedIpAddrs([]);
@@ -196,7 +197,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
         >
           <Input.TextArea
             autoSize
-            placeholder="请输入 ip / cidr 并回车换行以进行分割"
+            placeholder="请输入 ip / cidr 并回车换行以进行分割（重复内容将被剔除）"
             value={addedIpAddrsStr}
             onChange={(e) => setAddedIpAddrsStr(e.target.value)}
           />
