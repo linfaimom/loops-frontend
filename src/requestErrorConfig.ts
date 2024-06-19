@@ -19,6 +19,8 @@ interface ResponseStructure {
   showType?: ErrorShowType;
 }
 
+const loginPath = '/user/login/openid';
+
 /**
  * @name 错误处理
  * pro 自带的错误处理， 可以在这里做自己的改动
@@ -73,6 +75,9 @@ export const errorConfig: RequestConfig = {
         // Axios 的错误
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
         message.error(`Response msg: ${error.response.data.msg}`);
+        if (error.response.status === 401) {
+          window.location.href = loginPath;
+        }
       } else if (error.request) {
         // 请求已经成功发起，但没有收到响应
         // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
