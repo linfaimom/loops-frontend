@@ -18,8 +18,12 @@ import {
 } from 'antd';
 import { useEffect, useState } from 'react';
 
+// 外部 SAAS 不需要配置白名单
+const prodOutterIdentifier = 'outter';
+
 type WhiteListPanelProps = {
   envId: number;
+  envName: string;
   name: string;
   namespace: string;
 };
@@ -106,7 +110,7 @@ const WhiteListPanel: React.FC<WhiteListPanelProps> = (props) => {
   return (
     <div>
       {msgContextHolder}
-      <a onClick={showDrawer}>白名单</a>
+      {!props.envName.includes(prodOutterIdentifier) && <a onClick={showDrawer}>白名单</a>}
       <Drawer
         size="large"
         title={props.name}

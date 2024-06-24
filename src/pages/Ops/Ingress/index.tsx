@@ -124,6 +124,7 @@ const IngressList: React.FC = () => {
           <WhiteListPanel
             key={0}
             envId={record.envId}
+            envName={envName}
             namespace={record.namespace}
             name={record.ingressName}
           />,
