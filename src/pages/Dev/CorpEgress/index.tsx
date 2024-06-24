@@ -30,11 +30,13 @@ const CorpEgress: React.FC = () => {
   const [messageApi, msgContextHolder] = message.useMessage();
   let egresses = data as API.Egress[];
   const copyAllAddrs = async () => {
-    let addrs = egresses?.map((egress) => {
-      return egress.addr;
-    });
-    copy(addrs.join('\n'));
-    messageApi.success('已拷贝至剪切板');
+    if (egresses) {
+      let addrs = egresses?.map((egress) => {
+        return egress.addr;
+      });
+      copy(addrs.join('\n'));
+      messageApi.success('已拷贝至剪切板');
+    }
   };
   return (
     <PageContainer>

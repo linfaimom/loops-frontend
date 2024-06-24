@@ -3,7 +3,7 @@ export default [
   {
     path: '/admin',
     name: '平台管理',
-    icon: 'crown',
+    icon: 'setting',
     access: 'canAdmin',
     routes: [
       { path: '/admin', redirect: '/admin/env' },
@@ -12,7 +12,7 @@ export default [
   },
   {
     name: '研发自助工具',
-    icon: 'table',
+    icon: 'crown',
     path: '/dev',
     routes: [
       { path: '/dev', redirect: '/dev/deployinfo' },
