@@ -11,7 +11,17 @@ export default [
     ],
   },
   {
-    name: '日常运维',
+    name: '研发自助工具',
+    icon: 'table',
+    path: '/dev',
+    routes: [
+      { path: '/dev', redirect: '/dev/deployinfo' },
+      { path: '/dev/corpegress', name: '集团出口 IP', component: './Dev/CorpEgress' },
+      { path: '/dev/deployinfo', name: '环境版本信息', component: './Dev/VersionInfo' },
+    ],
+  },
+  {
+    name: 'SRE 运维工具',
     icon: 'table',
     access: 'canAdmin',
     path: '/ops',
