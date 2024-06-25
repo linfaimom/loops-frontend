@@ -16,8 +16,8 @@ export default [
     path: '/dev',
     routes: [
       { path: '/dev', redirect: '/dev/deployinfo' },
+      { path: '/dev/deployinfo', name: '环境部署情况', component: './Dev/DeployInfo' },
       { path: '/dev/corpegress', name: '集团出口 IP', component: './Dev/CorpEgress' },
-      { path: '/dev/deployinfo', name: '环境版本信息', component: './Dev/VersionInfo' },
     ],
   },
   {
