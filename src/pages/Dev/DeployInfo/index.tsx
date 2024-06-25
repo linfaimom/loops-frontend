@@ -30,15 +30,18 @@ const DeployInfo: React.FC = () => {
     {
       title: '应用部署名',
       dataIndex: 'deploymentName',
+      copyable: true,
     },
     {
       title: '当前镜像名',
       dataIndex: 'containers',
-      render: (_, record) => {
+      copyable: true,
+      renderText: (_, record) => {
         let containerNames = Object.keys(record.containers);
-        return containerNames.map((name, idx) => {
-          return <p key={idx}>{record.containers[name]}</p>;
+        let images = containerNames.map((name) => {
+          return record.containers[name];
         });
+        return images.join('\n');
       },
     },
   ];
