@@ -27,7 +27,7 @@ const columns: ProColumns<API.Egress>[] = [
   },
 ];
 
-const handleReturnJointFormat = (rawData: API.Egress[]): string => {
+const handleReturnSplitFormat = (rawData: API.Egress[]): string => {
   let addrs = rawData?.map((egress) => {
     return egress.addr;
   });
@@ -49,22 +49,31 @@ const handleNginxWhiteListFormat = (rawData: API.Egress[]): string => {
   return addrs.join('\n');
 };
 
+enum formatTypeEnum {
+  // 回车换行分割形式
+  ReturnSplit = 0,
+  // Json 数组形式
+  JsonArray = 1,
+  // Nginx 白名单形式
+  NginxWhiteListSnippet = 2,
+}
+
 const CorpEgress: React.FC = () => {
   const { data } = useRequest(() => fetchCorpEgresses({ getResponse: true }));
   const [messageApi, msgContextHolder] = message.useMessage();
   const [formatConfirmerOpened, setFormatConfirmerOpened] = useState<boolean>(false);
-  const [formatType, setFormatType] = useState<number>(0);
+  const [formatType, setFormatType] = useState<number>(formatTypeEnum.ReturnSplit);
   const [copyableResult, setCopyableResult] = useState<string>('');
   let egresses = data as API.Egress[];
   const onFormatChange = (type: number) => {
     switch (type) {
-      case 0:
-        setCopyableResult(handleReturnJointFormat(egresses));
+      case formatTypeEnum.ReturnSplit:
+        setCopyableResult(handleReturnSplitFormat(egresses));
         break;
-      case 1:
+      case formatTypeEnum.JsonArray:
         setCopyableResult(handleJsonArrFormat(egresses));
         break;
-      case 2:
+      case formatTypeEnum.NginxWhiteListSnippet:
         setCopyableResult(handleNginxWhiteListFormat(egresses));
         break;
       default:
@@ -87,7 +96,7 @@ const CorpEgress: React.FC = () => {
             type="primary"
             onClick={() => {
               setFormatConfirmerOpened(true);
-              setCopyableResult(handleReturnJointFormat(egresses));
+              setCopyableResult(handleReturnSplitFormat(egresses));
             }}
             icon={<CopyOutlined />}
           >
@@ -98,10 +107,14 @@ const CorpEgress: React.FC = () => {
       <Modal
         title="内容格式确认"
         open={formatConfirmerOpened}
-        onOk={copyAllAddrs}
+        onOk={() => {
+          copyAllAddrs();
+          setFormatConfirmerOpened(false);
+          setFormatType(formatTypeEnum.ReturnSplit);
+        }}
         onCancel={() => {
           setFormatConfirmerOpened(false);
-          setFormatType(0);
+          setFormatType(formatTypeEnum.ReturnSplit);
         }}
       >
         <Radio.Group
@@ -111,9 +124,9 @@ const CorpEgress: React.FC = () => {
           }}
           value={formatType}
         >
-          <Radio value={0}>换行符分割形式</Radio>
-          <Radio value={1}>JSON 数组形式</Radio>
-          <Radio value={2}>NGINX 白名单形式</Radio>
+          <Radio value={formatTypeEnum.ReturnSplit}>换行符分割形式</Radio>
+          <Radio value={formatTypeEnum.JsonArray}>JSON 数组形式</Radio>
+          <Radio value={formatTypeEnum.NginxWhiteListSnippet}>NGINX 白名单形式</Radio>
         </Radio.Group>
         <Divider></Divider>
         <TextArea value={copyableResult} autoSize={{ minRows: 3, maxRows: 10 }} />
