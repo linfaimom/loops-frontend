@@ -58,7 +58,7 @@ enum formatTypeEnum {
   NginxWhiteListSnippet = 2,
 }
 
-const CorpEgress: React.FC = () => {
+const CorpEgressInfo: React.FC = () => {
   const { data } = useRequest(() => fetchCorpEgresses({ getResponse: true }));
   const [messageApi, msgContextHolder] = message.useMessage();
   const [formatConfirmerOpened, setFormatConfirmerOpened] = useState<boolean>(false);
@@ -135,4 +135,4 @@ const CorpEgress: React.FC = () => {
   );
 };
 
-export default CorpEgress;
+export default CorpEgressInfo;

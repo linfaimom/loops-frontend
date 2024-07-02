@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 const formalNamespace = 'low-code';
 const grayNamespace = 'gray-low-code';
 
-const DeployInfo: React.FC = () => {
+const EnvDeployInfo: React.FC = () => {
   const { data } = useRequest(() => fetchEnvs());
   const [envId, setEnvId] = useState<number>(0);
   const [envName, setEnvName] = useState<string>('');
@@ -92,4 +92,4 @@ const DeployInfo: React.FC = () => {
   );
 };
 
-export default DeployInfo;
+export default EnvDeployInfo;
