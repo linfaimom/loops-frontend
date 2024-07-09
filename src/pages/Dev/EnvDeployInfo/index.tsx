@@ -3,7 +3,7 @@ import { fetchEnvs } from '@/services/env/api';
 import { SwapOutlined } from '@ant-design/icons';
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { useRequest } from '@umijs/max';
-import { Button, FloatButton, Modal, Select, Space, Switch, Tabs } from 'antd';
+import { Button, FloatButton, Modal, Select, Space, Switch, Tabs, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 
@@ -65,6 +65,7 @@ const EnvDeployInfo: React.FC = () => {
   };
   const [namespace, setNamespace] = useState<string>(formalNamespace);
   const [modal, contextHolder] = Modal.useModal();
+  const [messageApi, msgContextHolder] = message.useMessage();
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -129,7 +130,7 @@ const EnvDeployInfo: React.FC = () => {
       onOk: () => {
         const currentSelectedEnvs = selectedEnvsRef.current;
         if (currentSelectedEnvs.length !== 2) {
-          alert('仅支持 2 个环境的对比哦！');
+          messageApi.warning('仅支持填写 2 个环境哦～～重新填一下吧');
           return;
         }
         showDiff({
@@ -183,6 +184,7 @@ const EnvDeployInfo: React.FC = () => {
   ];
   return (
     <PageContainer>
+      {msgContextHolder}
       {contextHolder}
       {data && envId > 0 && (
         <>
