@@ -1,10 +1,22 @@
 import { fetchDeploymentBasicInfos } from '@/services/deployment/api';
 import { fetchEnvs } from '@/services/env/api';
+import { SwapOutlined } from '@ant-design/icons';
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { useRequest } from '@umijs/max';
-import { Button, Modal, Space, Switch, Tabs } from 'antd';
-import { useEffect, useState } from 'react';
+import { Button, FloatButton, Modal, Select, Space, Switch, Tabs } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
+
+type compareInfo = {
+  envId: number;
+  envName?: string;
+  namespace: string;
+};
+
+type comparePair = {
+  srcInfo: compareInfo;
+  destInfo: compareInfo;
+};
 
 const formalNamespace = 'low-code';
 const grayNamespace = 'gray-low-code';
@@ -23,73 +35,123 @@ const components = [
   'lcap-debugger',
 ];
 
+const buildInfoTxt = (rawData: API.DeploymentWithContainers[]): string => {
+  return rawData
+    .map((item) => {
+      if (components.includes(item.deploymentName)) {
+        let containerNames = Object.keys(item.containers);
+        let images = containerNames.map((name) => {
+          return item.containers[name];
+        });
+        let imagesTxt = images.join(';');
+        return item.deploymentName + ' => ' + imagesTxt;
+      }
+      return '';
+    })
+    .filter((v) => v !== '')
+    .sort()
+    .join('\n\n');
+};
+
 const EnvDeployInfo: React.FC = () => {
   const { data } = useRequest(() => fetchEnvs());
   const [envId, setEnvId] = useState<number>(0);
   const [envName, setEnvName] = useState<string>('');
+  const [envDesc, setEnvDesc] = useState<string>('');
+  // 为了让 modal 中 onOK 函数能及时拿到 selectedEnvs 的变动，只能用 ref 方法了；useState 方式会有延迟，不懂，先这样吧～～～
+  const selectedEnvsRef = useRef<string[]>([]);
+  const setSelectedEnvs = (values: string[]) => {
+    selectedEnvsRef.current = values;
+  };
   const [namespace, setNamespace] = useState<string>(formalNamespace);
   const [modal, contextHolder] = Modal.useModal();
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setEnvId(data[0].id);
+    }
+  }, [data]);
+
   const toggleNamespace = (checked: boolean) => {
     setNamespace(checked ? formalNamespace : grayNamespace);
   };
-  const showNamespaceDiffView = async () => {
-    // 正式命名空间的信息
-    let formalInfoResp = await fetchDeploymentBasicInfos({
-      envId: envId,
-      namespace: formalNamespace,
+
+  const showDiff = async (comparePair: comparePair) => {
+    // src env 命名空间的信息
+    let srcEnvNsInfoResp = await fetchDeploymentBasicInfos({
+      envId: comparePair.srcInfo.envId,
+      namespace: comparePair.srcInfo.namespace,
     });
-    let formalInfo = formalInfoResp.data;
-    // 灰度命名空间的信息
-    let grayInfoResp = await fetchDeploymentBasicInfos({
-      envId: envId,
-      namespace: grayNamespace,
+    let srcEnvNsInfoTxt = buildInfoTxt(srcEnvNsInfoResp.data);
+    // dest env 命名空间的信息
+    let destEnvNsInfoResp = await fetchDeploymentBasicInfos({
+      envId: comparePair.destInfo.envId,
+      namespace: comparePair.destInfo.namespace,
     });
-    let grayInfo = grayInfoResp.data;
-    // 仅比对关注的组件即可
-    let grayInfoTxt = grayInfo
-      .map((item) => {
-        if (components.includes(item.deploymentName)) {
-          let containerNames = Object.keys(item.containers);
-          let images = containerNames.map((name) => {
-            return item.containers[name];
-          });
-          let imagesTxt = images.join(';');
-          return item.deploymentName + ' => ' + imagesTxt;
-        }
-        return '';
-      })
-      .filter((v) => v !== '')
-      .sort()
-      .join('\n\n');
-    let formalInfoTxt = formalInfo
-      .map((item) => {
-        if (components.includes(item.deploymentName)) {
-          let containerNames = Object.keys(item.containers);
-          let images = containerNames.map((name) => {
-            return item.containers[name];
-          });
-          let imagesTxt = images.join(';');
-          return item.deploymentName + ' => ' + imagesTxt;
-        }
-        return '';
-      })
-      .filter((v) => v !== '')
-      .sort()
-      .join('\n\n');
+    let destEnvNsInfoTxt = buildInfoTxt(destEnvNsInfoResp.data);
     // 展示 Diff
     modal.info({
       width: 2000,
       content: (
         <ReactDiffViewer
-          leftTitle={'灰度命名空间'}
-          oldValue={grayInfoTxt}
-          rightTitle={'正式命名空间'}
-          newValue={formalInfoTxt}
+          leftTitle={comparePair.srcInfo.envName + ' (' + comparePair.srcInfo.namespace + ')'}
+          oldValue={srcEnvNsInfoTxt}
+          rightTitle={comparePair.destInfo.envName + ' (' + comparePair.destInfo.namespace + ')'}
+          newValue={destEnvNsInfoTxt}
           compareMethod={DiffMethod.LINES}
         />
       ),
     });
   };
+
+  const handleSelectChange = (envIds: string[]) => {
+    setSelectedEnvs(envIds);
+  };
+
+  const showEnvSelectorInModal = () => {
+    let options = data?.map((item) => {
+      return {
+        label: item.description,
+        value: item.id,
+      };
+    });
+    modal.confirm({
+      title: '请选择需对比的两个环境',
+      content: (
+        <Select
+          mode="multiple"
+          allowClear
+          style={{ width: '100%' }}
+          options={options}
+          onChange={handleSelectChange}
+        />
+      ),
+      onOk: () => {
+        const currentSelectedEnvs = selectedEnvsRef.current;
+        if (currentSelectedEnvs.length !== 2) {
+          alert('仅支持 2 个环境的对比哦！');
+          return;
+        }
+        showDiff({
+          srcInfo: {
+            envId: Number(currentSelectedEnvs[0]),
+            namespace: formalNamespace,
+            envName: options?.find((item) => item.value === Number(currentSelectedEnvs[0]))?.label,
+          },
+          destInfo: {
+            envId: Number(currentSelectedEnvs[1]),
+            namespace: formalNamespace,
+            envName: options?.find((item) => item.value === Number(currentSelectedEnvs[1]))?.label,
+          },
+        });
+        setSelectedEnvs([]);
+      },
+      onClose: () => {
+        setSelectedEnvs([]);
+      },
+    });
+  };
+
   const columns: ProColumns<API.DeploymentWithContainers>[] = [
     {
       dataIndex: 'index',
@@ -119,11 +181,6 @@ const EnvDeployInfo: React.FC = () => {
       },
     },
   ];
-  useEffect(() => {
-    if (data && data.length > 0) {
-      setEnvId(data[0].id);
-    }
-  }, [data]);
   return (
     <PageContainer>
       {contextHolder}
@@ -138,12 +195,20 @@ const EnvDeployInfo: React.FC = () => {
               let result = data.find((item) => item.id === Number(key));
               if (result) {
                 setEnvName(result.name);
+                setEnvDesc(result.description);
               }
             }}
             items={data.map((item) => ({
               key: item.id.toString(),
               label: item.description,
             }))}
+          />
+          <FloatButton
+            shape="circle"
+            type="primary"
+            tooltip="对比环境镜像差异"
+            icon={<SwapOutlined />}
+            onClick={showEnvSelectorInModal}
           />
           <ProTable
             search={false}
@@ -159,7 +224,15 @@ const EnvDeployInfo: React.FC = () => {
                     checkedChildren="正式命名空间"
                     unCheckedChildren="灰度命名空间"
                   />
-                  <Button size="small" onClick={() => showNamespaceDiffView()}>
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      showDiff({
+                        srcInfo: { envId: envId, namespace: grayNamespace, envName: envDesc },
+                        destInfo: { envId: envId, namespace: formalNamespace, envName: envDesc },
+                      })
+                    }
+                  >
                     对比命名空间镜像差异
                   </Button>
                 </Space>
