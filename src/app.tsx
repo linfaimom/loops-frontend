@@ -49,7 +49,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     breadcrumbRender: false,
     waterMarkProps: {
-      content: initialState?.currentUser?.fullname,
+      content: initialState?.currentUser?.fullname + '(' + initialState?.currentUser?.email + ')',
     },
     footerRender: () => <Footer />,
     onPageChange: () => {

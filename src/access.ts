@@ -3,7 +3,7 @@
  * */
 
 // 直接这里写死，方便
-const admins: string[] = ['linfengxiang01', 'huyuchao', 'hzlouchao', 'caoyuan05'];
+const admins: string[] = ['linfengxiang01', 'huyuchao', 'hzlouchao', 'caoyuan05', 'xiaowucheng'];
 
 export default function access(initialState: { currentUser?: API.CurrentUser } | undefined) {
   const { currentUser } = initialState ?? {};
