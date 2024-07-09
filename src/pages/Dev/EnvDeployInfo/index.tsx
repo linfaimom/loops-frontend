@@ -40,9 +40,13 @@ const buildInfoTxt = (rawData: API.DeploymentWithContainers[]): string => {
     .map((item) => {
       if (components.includes(item.deploymentName)) {
         let containerNames = Object.keys(item.containers);
-        let images = containerNames.map((name) => {
-          return item.containers[name];
-        });
+        let images = containerNames
+          .map((name) => {
+            return item.containers[name];
+          })
+          .map((item) => {
+            return item.split('/')[2];
+          });
         let imagesTxt = images.join(';');
         return item.deploymentName + ' => ' + imagesTxt;
       }
